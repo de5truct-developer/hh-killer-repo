@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Список вакансий{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Все вакансии</h1>
+      <p class="page-subtitle">Найдено: <b>{{ total }}</b> вакансий</p>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="card card-flat mb-2" style="padding:1.25rem;">
+      <form method="get" class="flex gap-2" style="flex-wrap:wrap;align-items:flex-end;">
+        <div class="form-group" style="margin:0;flex:2;min-width:180px;">
+          <label class="form-label">Поиск</label>
+          <input type="text" name="q" class="form-control" placeholder="Должность, компания..." value="{{ request.GET.q }}">
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:130px;">
+          <label class="form-label">Город</label>
+          <input type="text" name="location" class="form-control" placeholder="Алматы" value="{{ request.GET.location }}">
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:150px;">
+          <label class="form-label">Тип занятости</label>
+          <select name="employment_type" class="form-control">
+            <option value="">Все</option>
+            <option value="full" {% if request.GET.employment_type == 'full' %}selected{% endif %}>Полная</option>
+            <option value="part" {% if request.GET.employment_type == 'part' %}selected{% endif %}>Частичная</option>
+            <option value="remote" {% if request.GET.employment_type == 'remote' %}selected{% endif %}>Удалённая</option>
+            <option value="contract" {% if request.GET.employment_type == 'contract' %}selected{% endif %}>Контракт</option>
+            <option value="internship" {% if request.GET.employment_type == 'internship' %}selected{% endif %}>Стажировка</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:130px;">
+          <label class="form-label">Зарплата от (₸)</label>
+          <input type="number" name="salary_min" class="form-control" placeholder="0" value="{{ request.GET.salary_min }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Найти</button>
+        {% if request.GET %}<a href="{% url 'vacancy_list' %}" class="btn btn-ghost">Сбросить</a>{% endif %}
+      </form>
+    </div>
+
+    <!-- VACANCY LIST -->
+    {% if vacancies %}
+    <div class="grid grid-auto">
+      {% for item in vacancies %}
+      {% with v=item.vacancy %}
+      <div class="vacancy-card">
+        <div class="vacancy-card-header">
+          <div style="flex:1;">
+            <a href="{% url 'vacancy_detail' v.pk %}" class="vacancy-title">{{ v.title }}</a>
+            <a href="{% url 'public_employer_profile' v.employer.pk %}" class="vacancy-company" style="display:block;">{{ v.get_company_name }}</a>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;">
+            {% if v.salary_min or v.salary_max %}<span class="vacancy-salary">{{ v.get_salary_display }}</span>{% endif %}
+            {% if item.score is not None %}
+              <span class="match-badge match-{{ item.score_color }} flex items-center gap-1" style="font-size:.75rem;">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                {{ item.score }}%
+              </span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="vacancy-meta">
+          <span class="tag tag-gray">{{ v.get_employment_type_display }}</span>
+        </div>
+        <div class="flex gap-1" style="flex-wrap:wrap; margin-top: 10px;">
+              {% if v.experience_required %}
+              <span class="tag tag-orange tag-sm">💼 {{ v.get_experience_required_display }}</span>
+              {% endif %}
+              {% if v.education_required %}
+              <span class="tag tag-gray tag-sm">🎓 {{ v.get_education_required_display }}</span>
+              {% endif %}
+              <span class="tag tag-gray tag-sm">📍 {{ v.get_location_display|default:v.location|default:"Любой город" }}</span>
+        </div>
+        <div class="flex gap-1" style="flex-wrap:wrap; margin-top: 10px;">
+          {% for skill in v.skills_required.all|slice:":5" %}<span class="tag tag-sm">{{ skill.name }}</span>{% endfor %}
+          {% if v.skills_required.count > 5 %}<span class="tag tag-sm tag-gray">+{{ v.skills_required.count|add:"-5" }}</span>{% endif %}
+        </div>
+        <div class="flex items-center justify-between" style="margin-top:.25rem;">
+          <span class="text-xs text-muted">{{ v.created_at|date:"d M Y" }}</span>
+          <div class="flex gap-1">
+            {% if item.applied %}<span class="tag tag-green tag-sm flex items-center gap-1"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> Откликнулся</span>
+            {% else %}<a href="{% url 'vacancy_detail' v.pk %}" class="btn btn-outline btn-sm">Подробнее</a>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>
+      <h3>Вакансии не найдены</h3>
+      <p>Попробуйте изменить параметры поиска</p>
+      <a href="{% url 'vacancy_list' %}" class="btn btn-outline mt-2">Сбросить фильтры</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

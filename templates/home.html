@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <h1 class="fade-in">Найди работу <span>мечты</span><br>с умным подбором</h1>
+    <p class="fade-in fade-in-1">Платформа, которая подбирает вакансии по вашим навыкам автоматически</p>
+    <form id="hero-search-form" class="hero-search fade-in fade-in-2">
+      <input id="hero-q" type="text" placeholder="Должность, навык, компания...">
+      <button type="submit" class="btn btn-primary">Найти</button>
+    </form>
+    <div class="stats fade-in fade-in-3">
+      <div class="stat-item"><div class="stat-number">{{ stats.vacancies }}</div><div class="stat-label">Вакансий</div></div>
+      <div class="stat-item"><div class="stat-number">{{ stats.companies }}</div><div class="stat-label">Компаний</div></div>
+      <div class="stat-item"><div class="stat-number">{{ stats.seekers }}</div><div class="stat-label">Соискателей</div></div>
+    </div>
+  </div>
+</section>
+
+{% if recommended %}
+<section class="section" style="background:#EEF2FF;">
+  <div class="container">
+    <div class="flex items-center justify-between mb-2">
+      <div>
+        <h2 class="section-title flex items-center gap-1">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--primary);"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Рекомендовано для вас
+        </h2>
+        <p class="section-subtitle">На основе ваших навыков</p>
+      </div>
+      <a href="{% url 'recommendations' %}" class="btn btn-outline btn-sm">Все рекомендации</a>
+    </div>
+    <div class="grid grid-auto">
+      {% for vacancy, score in recommended %}
+      <div class="vacancy-card fade-in">
+        <div class="vacancy-card-header">
+          <div>
+            <a href="{% url 'vacancy_detail' vacancy.pk %}" class="vacancy-title">{{ vacancy.title }}</a>
+            <div class="vacancy-company">{{ vacancy.get_company_name }}</div>
+          </div>
+          <span class="match-badge match-{% if score >= 70 %}success{% elif score >= 40 %}warning{% else %}danger{% endif %}">{{ score }}%</span>
+        </div>
+        <div class="vacancy-meta">
+          {% if vacancy.location %}<span class="tag tag-gray flex items-center gap-1"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path></svg>{{ vacancy.location }}</span>{% endif %}
+          <span class="tag tag-gray">{{ vacancy.get_employment_type_display }}</span>
+          {% if vacancy.salary_min or vacancy.salary_max %}<span class="vacancy-salary">{{ vacancy.get_salary_display }}</span>{% endif %}
+        </div>
+        <div class="flex gap-1" style="flex-wrap:wrap;">
+          {% for skill in vacancy.skills_required.all|slice:":4" %}
+            <span class="tag tag-sm">{{ skill.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="flex items-center justify-between mb-2">
+      <div>
+        <h2 class="section-title">Свежие вакансии</h2>
+        <p class="section-subtitle">Только что добавленные предложения</p>
+      </div>
+      <a href="{% url 'vacancy_list' %}" class="btn btn-outline btn-sm">Все вакансии →</a>
+    </div>
+    <div class="grid grid-auto">
+      {% for v in recent_vacancies %}
+      <div class="vacancy-card fade-in">
+        <div class="vacancy-card-header">
+          <div>
+            <a href="{% url 'vacancy_detail' v.pk %}" class="vacancy-title">{{ v.title }}</a>
+            <div class="vacancy-company">{{ v.get_company_name }}</div>
+          </div>
+          {% if v.salary_min or v.salary_max %}<span class="vacancy-salary">{{ v.get_salary_display }}</span>{% endif %}
+        </div>
+        <div class="vacancy-meta">
+          {% if v.location %}<span class="tag tag-gray flex items-center gap-1"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path></svg>{{ v.location }}</span>{% endif %}
+          <span class="tag tag-gray">{{ v.get_employment_type_display }}</span>
+        </div>
+        <div class="flex gap-1" style="flex-wrap:wrap;">
+          {% for skill in v.skills_required.all|slice:":4" %}<span class="tag tag-sm">{{ skill.name }}</span>{% endfor %}
+        </div>
+        <a href="{% url 'vacancy_detail' v.pk %}" class="btn btn-outline btn-sm" style="align-self:flex-start;margin-top:.25rem;">Подробнее</a>
+      </div>
+      {% empty %}
+      <div class="empty-state" style="grid-column:1/-1;">
+        <h3>Пока нет вакансий</h3>
+        {% if user.is_employer %}<a href="{% url 'create_vacancy' %}" class="btn btn-primary mt-2">Создать первую вакансию</a>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if not user.is_authenticated %}
+<section class="section" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff;text-align:center;">
+  <div class="container">
+    <h2 style="font-size:2rem;font-weight:800;margin-bottom:.75rem;">Готов начать?</h2>
+    <p style="opacity:.85;margin-bottom:2rem;font-size:1.05rem;">Зарегистрируйтесь и получите доступ к умному подбору вакансий</p>
+    <div class="flex gap-2" style="justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'register_seeker' %}" class="btn btn-lg" style="background:#fff;color:#4F46E5;">Я ищу работу</a>
+      <a href="{% url 'register_employer' %}" class="btn btn-lg" style="background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.4);">Я работодатель</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

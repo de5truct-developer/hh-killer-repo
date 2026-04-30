@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Мои отклики{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="page-header flex items-center justify-between">
+      <div>
+        <h1 class="page-title">Мои отклики</h1>
+        <p class="page-subtitle">Всего: {{ applications.count }}</p>
+      </div>
+      <a href="{% url 'vacancy_list' %}" class="btn btn-outline">Найти вакансии</a>
+    </div>
+
+    {% if applications %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Вакансия</th>
+            <th>Компания</th>
+            <th>Совпадение</th>
+            <th>Статус</th>
+            <th>Дата</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+          <tr>
+            <td><a href="{% url 'vacancy_detail' app.vacancy.pk %}" style="font-weight:600;">{{ app.vacancy.title }}</a></td>
+            <td class="text-muted">{{ app.vacancy.get_company_name }}</td>
+            <td>
+              <div class="flex items-center gap-1">
+                <div class="progress" style="width:60px;">
+                  <div class="progress-bar progress-bar-{% if app.match_score >= 70 %}success{% elif app.match_score >= 40 %}warning{% else %}danger{% endif %}"
+                       style="width:{{ app.match_score }}%;"></div>
+                </div>
+                <span class="text-sm font-semibold">{{ app.match_score }}%</span>
+              </div>
+            </td>
+            <td><span class="status status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+            <td class="text-muted text-sm">{{ app.applied_at|date:"d M Y" }}</td>
+            <td style="display:flex; gap: 0.5rem;">
+              {% if app.resume_file %}
+                <a href="{{ app.resume_file.url }}" target="_blank" class="btn btn-outline btn-sm" title="Ваше резюме">📄</a>
+              {% endif %}
+              <a href="{% url 'application_chat' app.pk %}" class="btn btn-primary btn-sm" title="Чат">💬 Чат</a>
+              <a href="{% url 'vacancy_detail' app.vacancy.pk %}" class="btn btn-ghost btn-sm" title="Вакансия">→</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+      <h3>Нет откликов</h3>
+      <p>Откликнитесь на вакансии, которые вас интересуют</p>
+      <a href="{% url 'recommendations' %}" class="btn btn-primary mt-2">🎯 Рекомендации для вас</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

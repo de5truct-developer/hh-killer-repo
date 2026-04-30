@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Уведомления{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container-sm">
+    <div class="page-header flex items-center justify-between">
+      <div>
+        <h1 class="page-title">🔔 Уведомления</h1>
+        <p class="page-subtitle">Все ваши уведомления в одном месте</p>
+      </div>
+      {% if notifications %}
+      <form method="post" action="{% url 'mark_all_read' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm">✅ Прочитать все</button>
+      </form>
+      {% endif %}
+    </div>
+
+    {% if notifications %}
+      <div style="display:flex;flex-direction:column;gap:.75rem;">
+        {% for n in notifications %}
+          <div class="card card-flat {% if not n.is_read %}notif-unread{% endif %}" style="padding:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;{% if not n.is_read %}border-left:3px solid var(--primary);{% else %}border-left:3px solid var(--border);{% endif %}">
+            <div class="flex items-center gap-2" style="flex:1;min-width:0;">
+              <div style="width:40px;height:40px;border-radius:50%;background:{% if not n.is_read %}#EEF2FF{% else %}var(--bg){% endif %};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;">
+                {% if 'откли' in n.message %}📬
+                {% elif 'принят' in n.message or 'одобрен' in n.message %}✅
+                {% elif 'отклонен' in n.message or 'отклён' in n.message %}❌
+                {% elif 'просмотр' in n.message %}👁
+                {% else %}🔔{% endif %}
+              </div>
+              <div style="min-width:0;">
+                <p style="font-weight:{% if not n.is_read %}600{% else %}400{% endif %};color:var(--text);margin:0;line-height:1.4;">{{ n.message }}</p>
+                <p class="text-xs text-muted" style="margin-top:.2rem;">{{ n.created_at|timesince }} назад</p>
+              </div>
+            </div>
+            <div class="flex gap-1" style="flex-shrink:0;">
+              {% if n.link %}
+                <a href="{% url 'read_notification' n.pk %}" class="btn btn-outline btn-sm">Перейти</a>
+              {% endif %}
+              {% if not n.is_read %}
+                <a href="{% url 'read_notification' n.pk %}" class="btn btn-ghost btn-sm" style="font-size:.8rem;">Прочитано</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <h3>Нет уведомлений</h3>
+        <p>Когда что-то произойдёт — мы вам сообщим</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .notif-unread { background: linear-gradient(to right, #F8F7FF, #FFFFFF); }
+  .card:hover { transform: none; }
+</style>
+{% endblock %}

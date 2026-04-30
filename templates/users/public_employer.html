@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}{{ profile.company_name }}{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="card mb-2" style="padding:2rem;">
+      <div class="flex items-center gap-3">
+        {% if profile.logo %}
+          <img src="{{ profile.logo.url }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+        {% else %}
+          <div class="avatar avatar-xl">{{ profile.company_name|first|upper }}</div>
+        {% endif %}
+        <div>
+          <h1 class="page-title" style="font-size:1.6rem;">{{ profile.company_name }}</h1>
+          {% if profile.location %}<p class="text-muted mt-1">📍 {{ profile.location }}</p>{% endif %}
+          {% if profile.website %}<a href="{{ profile.website }}" target="_blank" class="btn btn-outline btn-sm mt-2">🌐 Сайт компании</a>{% endif %}
+        </div>
+      </div>
+      {% if profile.description %}
+      <div class="divider"></div>
+      <p style="color:var(--text-muted);line-height:1.75;">{{ profile.description }}</p>
+      {% endif %}
+    </div>
+
+    <h2 class="page-title" style="font-size:1.2rem;margin-bottom:1rem;">Открытые вакансии ({{ vacancies.count }})</h2>
+    <div class="grid grid-auto">
+      {% for v in vacancies %}
+      <div class="vacancy-card">
+        <div class="vacancy-card-header">
+          <div>
+            <a href="{% url 'vacancy_detail' v.pk %}" class="vacancy-title">{{ v.title }}</a>
+          </div>
+          {% if v.salary_min or v.salary_max %}<span class="vacancy-salary">{{ v.get_salary_display }}</span>{% endif %}
+        </div>
+        <div class="vacancy-meta">
+          {% if v.location %}<span class="tag tag-gray">📍 {{ v.location }}</span>{% endif %}
+          <span class="tag tag-gray">{{ v.get_employment_type_display }}</span>
+        </div>
+        <div class="flex gap-1" style="flex-wrap:wrap;">
+          {% for skill in v.skills_required.all|slice:":5" %}<span class="tag tag-sm">{{ skill.name }}</span>{% endfor %}
+        </div>
+        <a href="{% url 'vacancy_detail' v.pk %}" class="btn btn-outline btn-sm" style="align-self:flex-start;">Подробнее</a>
+      </div>
+      {% empty %}
+      <div class="empty-state" style="grid-column:1/-1;"><h3>Нет активных вакансий</h3></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Избранное{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">❤️ Избранные вакансии</h1>
+      <p class="page-subtitle">Сохранённые: {{ saved.count }}</p>
+    </div>
+    {% if saved %}
+    <div class="grid grid-auto">
+      {% for item in saved %}
+      {% with v=item.vacancy %}
+      <div class="vacancy-card">
+        <div class="vacancy-card-header">
+          <div>
+            <a href="{% url 'vacancy_detail' v.pk %}" class="vacancy-title">{{ v.title }}</a>
+            <div class="vacancy-company">{{ v.get_company_name }}</div>
+          </div>
+          {% if v.salary_min or v.salary_max %}<span class="vacancy-salary">{{ v.get_salary_display }}</span>{% endif %}
+        </div>
+        <div class="vacancy-meta">
+          {% if v.location %}<span class="tag tag-gray">📍 {{ v.location }}</span>{% endif %}
+          <span class="tag tag-gray">{{ v.get_employment_type_display }}</span>
+        </div>
+        <div class="flex items-center justify-between mt-1">
+          <span class="text-xs text-muted">Сохранено: {{ item.saved_at|date:"d M Y" }}</span>
+          <div class="flex gap-1">
+            <a href="{% url 'vacancy_detail' v.pk %}" class="btn btn-outline btn-sm">Подробнее</a>
+            <form method="post" action="{% url 'toggle_save_vacancy' v.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger);">✕ Убрать</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+      <h3>Нет избранных вакансий</h3>
+      <p>Сохраняйте интересные вакансии, чтобы вернуться к ним позже</p>
+      <a href="{% url 'vacancy_list' %}" class="btn btn-primary mt-2">Найти вакансии</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

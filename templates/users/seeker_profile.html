@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Мой профиль{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="layout-sidebar">
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="card text-center" style="padding:2rem 1.5rem;">
+          {% if profile.photo %}
+            <img src="{{ profile.photo.url }}" alt="Avatar" class="avatar avatar-xl" style="margin:0 auto 1rem; object-fit:cover;">
+          {% else %}
+            <div class="avatar avatar-xl" style="margin:0 auto 1rem;">
+              {{ user.first_name|first|upper|default:user.email|first|upper }}
+            </div>
+          {% endif %}
+          <h2 style="font-size:1.1rem;font-weight:700;">{{ user.get_full_name|default:user.email }}</h2>
+          <p class="text-muted text-sm mt-1">{{ user.email }}</p>
+          {% if profile.profession %}<span class="tag tag-green" style="margin-top:.75rem;">{{ profile.profession }}</span>{% else %}<span class="tag tag-green" style="margin-top:.75rem;">Соискатель</span>{% endif %}
+          {% if profile.location %}<p class="text-sm text-muted mt-2 flex items-center gap-1 justify-center"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path></svg> {{ profile.get_location_display }}</p>{% endif %}
+          {% if profile.desired_salary %}<p class="text-sm text-muted mt-1 flex items-center gap-1 justify-center"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> от {{ profile.desired_salary|floatformat:0 }} ₸</p>{% endif %}
+        </div>
+
+        <div class="card card-flat mt-2">
+          <h3 style="font-size:.9rem;font-weight:700;margin-bottom:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Навыки</h3>
+          <div class="flex gap-1" style="flex-wrap:wrap;">
+            {% for skill in profile.skills.all %}
+              <span class="tag">{{ skill.name }}</span>
+            {% empty %}
+              <p class="text-muted text-sm">Навыки не указаны</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card card-flat mt-2">
+          <h3 style="font-size:.9rem;font-weight:700;margin-bottom:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Быстрые действия</h3>
+          <div class="flex flex-col gap-1">
+            <a href="{% url 'vacancy_list' %}" class="btn btn-outline btn-sm btn-block">🔍 Поиск вакансий</a>
+            <a href="{% url 'recommendations' %}" class="btn btn-primary btn-sm btn-block">🎯 Рекомендации</a>
+            <a href="{% url 'my_applications' %}" class="btn btn-ghost btn-sm btn-block">📋 Мои отклики</a>
+            <a href="{% url 'saved_vacancies' %}" class="btn btn-ghost btn-sm btn-block">❤️ Избранное</a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <div>
+        <div class="card">
+          <h2 class="page-title" style="font-size:1.3rem;margin-bottom:1.5rem;">Редактировать профиль</h2>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+              <label class="form-label">Фото профиля</label>
+              {{ form.photo }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Специальность (Должность)</label>
+              {{ form.profession }}
+            </div>
+            <div class="grid grid-2" style="gap:1rem;">
+              <div class="form-group">
+                <label class="form-label">О себе</label>
+                {{ form.bio }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Интересы</label>
+                {{ form.interests }}
+              </div>
+            </div>
+            <div class="grid grid-2" style="gap:1rem;">
+              <div class="form-group">
+                <label class="form-label">Уровень образования</label>
+                {{ form.education_level }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Учебное заведение</label>
+                {{ form.institution }}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Доп. информация об образовании</label>
+              {{ form.education }}
+            </div>
+            <div class="grid grid-2" style="gap:1rem;">
+              <div class="form-group">
+                <label class="form-label">Уровень опыта</label>
+                {{ form.experience_level }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Описание опыта работы</label>
+                {{ form.experience }}
+              </div>
+            </div>
+            <div class="grid grid-2" style="gap:1rem;">
+              <div class="form-group">
+                <label class="form-label">Город</label>
+                {{ form.location }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Телефон</label>
+                {{ form.phone }}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Желаемая зарплата (₸)</label>
+              {{ form.desired_salary }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Навыки</label>
+              <div class="skills-grid">
+                {% for skill in form.skills %}
+                  <label>{{ skill.tag }} {{ skill.choice_label }}</label>
+                {% endfor %}
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+          </form>
+        </div>
+
+        <!-- RECENT APPLICATIONS -->
+        {% if applications %}
+        <div class="card mt-2">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Последние отклики</h3>
+          {% for app in applications|slice:":5" %}
+          <div class="flex items-center justify-between" style="padding:.75rem 0;border-bottom:1px solid var(--border);">
+            <div>
+              <a href="{% url 'vacancy_detail' app.vacancy.pk %}" style="font-weight:600;font-size:.9rem;">{{ app.vacancy.title }}</a>
+              <p class="text-muted text-xs mt-1">{{ app.vacancy.get_company_name }} · {{ app.applied_at|date:"d M Y" }}</p>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="match-badge match-{% if app.match_score >= 70 %}success{% elif app.match_score >= 40 %}warning{% else %}danger{% endif %}" style="font-size:.75rem;">{{ app.match_score }}%</span>
+              <span class="status status-{{ app.status }}">{{ app.get_status_display }}</span>
+            </div>
+          </div>
+          {% endfor %}
+          <a href="{% url 'my_applications' %}" class="btn btn-ghost btn-sm mt-2">Все отклики</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

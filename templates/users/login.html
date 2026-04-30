@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container-sm">
+    <div class="card" style="max-width:440px;margin:2rem auto;">
+      <div class="text-center mb-2">
+        <h1 class="page-title" style="font-size:1.6rem;">С возвращением 👋</h1>
+        <p class="text-muted text-sm mt-1">Войдите в свой аккаунт</p>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" name="username" class="form-control" placeholder="you@example.com" required autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль</label>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+        {% if form.errors %}
+          <div class="alert alert-error">Неверный email или пароль.</div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:.5rem;">Войти</button>
+      </form>
+      <div class="divider"></div>
+      <p class="text-center text-sm text-muted">Нет аккаунта? <a href="{% url 'register_choice' %}" style="font-weight:600;">Зарегистрироваться</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Профиль соискателя{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="layout-sidebar">
+      <aside class="sidebar">
+        <div class="card text-center" style="padding:2rem 1.5rem;">
+          {% if profile.photo %}
+            <img src="{{ profile.photo.url }}" alt="Avatar" class="avatar avatar-xl" style="margin:0 auto 1rem; object-fit:cover;">
+          {% else %}
+            <div class="avatar avatar-xl" style="margin:0 auto 1rem;">
+              {{ seeker.first_name|first|upper|default:seeker.email|first|upper }}
+            </div>
+          {% endif %}
+          <h2 style="font-size:1.1rem;font-weight:700;">{{ seeker.get_full_name|default:seeker.email }}</h2>
+          {% if profile.profession %}<span class="tag tag-green" style="margin-top:.5rem;">{{ profile.profession }}</span>{% else %}<span class="tag tag-green" style="margin-top:.5rem;">Соискатель</span>{% endif %}
+          {% if profile.location %}<p class="text-sm text-muted mt-2">📍 {{ profile.get_location_display }}</p>{% endif %}
+          {% if profile.desired_salary %}<p class="text-sm text-muted mt-1">💰 от {{ profile.desired_salary|floatformat:0 }} ₸</p>{% endif %}
+          {% if profile.phone %}<p class="text-sm text-muted mt-1">📞 {{ profile.phone }}</p>{% endif %}
+        </div>
+        {% if profile.skills.all %}
+        <div class="card mt-2">
+          <h3 class="text-xs text-muted font-bold" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;">Навыки</h3>
+          <div class="flex gap-1" style="flex-wrap:wrap;">
+            {% for skill in profile.skills.all %}<span class="tag">{{ skill.name }}</span>{% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </aside>
+      <div>
+        {% if profile.bio %}
+        <div class="card mb-2">
+          <h3 style="font-weight:700;margin-bottom:.75rem;">О себе</h3>
+          <p style="color:var(--text-muted);line-height:1.75;">{{ profile.bio }}</p>
+        </div>
+        {% endif %}
+        {% if profile.experience or profile.experience_level %}
+        <div class="card mb-2">
+          <h3 style="font-weight:700;margin-bottom:.75rem;">💼 Опыт работы</h3>
+          {% if profile.experience_level %}<p class="text-sm" style="font-weight:600;margin-bottom:.5rem;">Опыт: {{ profile.get_experience_level_display }}</p>{% endif %}
+          <p style="color:var(--text-muted);white-space:pre-line;line-height:1.75;">{{ profile.experience }}</p>
+        </div>
+        {% endif %}
+        {% if profile.education or profile.education_level or profile.institution %}
+        <div class="card mb-2">
+          <h3 style="font-weight:700;margin-bottom:.75rem;">🎓 Образование</h3>
+          {% if profile.education_level %}<p class="text-sm" style="font-weight:600;margin-bottom:.25rem;">Уровень: {{ profile.get_education_level_display }}</p>{% endif %}
+          {% if profile.institution %}<p class="text-sm" style="font-weight:600;margin-bottom:.5rem;">Учебное заведение: {{ profile.get_institution_display }}</p>{% endif %}
+          <p style="color:var(--text-muted);line-height:1.75;">{{ profile.education }}</p>
+        </div>
+        {% endif %}
+        {% if profile.interests %}
+        <div class="card">
+          <h3 style="font-weight:700;margin-bottom:.75rem;">⭐ Интересы</h3>
+          <p style="color:var(--text-muted);">{{ profile.interests }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

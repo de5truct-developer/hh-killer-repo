@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Отклики — {{ vacancy.title }}{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="page-header flex items-center justify-between">
+      <div>
+        <h1 class="page-title">Отклики на вакансию</h1>
+        <p class="page-subtitle">{{ vacancy.title }} · {{ applications.count }} откликов</p>
+      </div>
+      <a href="{% url 'vacancy_detail' vacancy.pk %}" class="btn btn-ghost">← Вакансия</a>
+    </div>
+
+    {% if applications %}
+    <div class="grid" style="gap:1rem;">
+      {% for app in applications %}
+      <div class="card card-flat" style="padding:1.25rem;">
+        <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:1rem;">
+          <div class="flex items-center gap-2">
+            {% if app.seeker.seekerprofile.photo %}
+              <img src="{{ app.seeker.seekerprofile.photo.url }}" alt="Avatar" class="avatar avatar-lg" style="object-fit:cover;">
+            {% else %}
+              <div class="avatar avatar-lg">{{ app.seeker.first_name|first|upper|default:app.seeker.email|first|upper }}</div>
+            {% endif %}
+            <div>
+              <a href="{% url 'public_seeker_profile' app.seeker.pk %}" style="font-weight:700;font-size:.95rem;">
+                {{ app.seeker.get_full_name|default:app.seeker.email }}
+              </a>
+              {% if app.seeker.seekerprofile.profession %}
+                <p class="text-xs" style="color:var(--primary);font-weight:600;">{{ app.seeker.seekerprofile.profession }}</p>
+              {% else %}
+                <p class="text-xs text-muted">{{ app.seeker.email }}</p>
+              {% endif %}
+              <p class="text-xs text-muted mt-1">{{ app.applied_at|date:"d M Y, H:i" }} 
+              {% if app.seeker.seekerprofile.experience_level %} · Опыт: {{ app.seeker.seekerprofile.get_experience_level_display }}{% endif %}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2" style="flex-wrap:wrap;">
+            <span class="match-badge match-{% if app.match_score >= 70 %}success{% elif app.match_score >= 40 %}warning{% else %}danger{% endif %}">
+              🎯 {{ app.match_score }}%
+            </span>
+            <span class="status status-{{ app.status }}">{{ app.get_status_display }}</span>
+          </div>
+        </div>
+
+        {% if app.cover_letter %}
+        <div style="margin-top:1rem;padding:.85rem;background:var(--bg);border-radius:var(--radius-sm);font-size:.9rem;color:var(--text-muted);border-left:3px solid var(--primary);">
+          {{ app.cover_letter }}
+        </div>
+        {% endif %}
+
+        <!-- SKILLS MATCH -->
+        {% with sp=app.seeker.seekerprofile %}
+          {% if sp.skills.all %}
+          <div style="margin-top:.75rem;">
+            <p class="text-xs text-muted font-semibold" style="margin-bottom:.35rem;">Навыки кандидата:</p>
+            <div class="flex gap-1" style="flex-wrap:wrap;">
+              {% for skill in sp.skills.all|slice:":8" %}
+                <span class="tag tag-sm">{{ skill.name }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="flex gap-1" style="margin-top:1rem;flex-wrap:wrap;">
+          <form method="post" action="{% url 'update_application_status' app.pk %}">
+            {% csrf_token %}
+            <select name="status" class="form-control" style="width:auto;display:inline-block;padding:.4rem .75rem;font-size:.85rem;">
+              {% for val, label in app.STATUS_CHOICES %}
+                <option value="{{ val }}" {% if app.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm" style="margin-left:.5rem;">Обновить</button>
+          </form>
+          {% if app.resume_file %}
+            <a href="{{ app.resume_file.url }}" target="_blank" class="btn btn-outline btn-sm">📄 Скачать резюме</a>
+          {% endif %}
+          <a href="{% url 'application_chat' app.pk %}" class="btn btn-primary btn-sm">💬 Чат</a>
+          <a href="{% url 'public_seeker_profile' app.seeker.pk %}" class="btn btn-ghost btn-sm">Полный профиль</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <h3>Откликов пока нет</h3>
+      <p>Кандидаты ещё не откликнулись на эту вакансию</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

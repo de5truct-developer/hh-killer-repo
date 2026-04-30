@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Обращение #{{ ticket.pk }}{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container-sm">
+    <div class="flex items-center justify-between mb-2">
+      <a href="{% url 'support_home' %}" class="btn btn-ghost btn-sm">← Назад</a>
+      {% if ticket.status != 'closed' %}
+      <form method="post" action="{% url 'close_ticket' ticket.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm">✓ Закрыть обращение</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <div class="card mb-2">
+      <div class="flex items-center justify-between flex-wrap gap-1">
+        <h1 style="font-size:1.2rem;font-weight:700;">{{ ticket.subject }}</h1>
+        <span class="status status-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+      </div>
+      <p class="text-xs text-muted mt-1">{{ ticket.user.email }} · {{ ticket.created_at|date:"d M Y, H:i" }}</p>
+      <div class="divider"></div>
+      <p style="line-height:1.75;color:var(--text-muted);">{{ ticket.message }}</p>
+    </div>
+
+    <!-- REPLIES -->
+    {% for reply in ticket.replies.all %}
+    <div class="card mb-1 {% if reply.is_admin_reply %}card-flat{% endif %}"
+         style="{% if reply.is_admin_reply %}border-left:3px solid var(--primary);{% else %}border-left:3px solid var(--border);{% endif %}">
+      <div class="flex items-center gap-2 mb-1">
+        <div class="avatar" style="width:32px;height:32px;font-size:.8rem;
+          {% if reply.is_admin_reply %}background:linear-gradient(135deg,#4F46E5,#7C3AED);{% else %}background:var(--text-light);{% endif %}">
+          {{ reply.author.first_name|first|upper|default:reply.author.email|first|upper }}
+        </div>
+        <div>
+          <span style="font-weight:600;font-size:.9rem;">
+            {% if reply.is_admin_reply %}🛡 Поддержка{% else %}{{ reply.author.get_full_name|default:reply.author.email }}{% endif %}
+          </span>
+          <span class="text-xs text-muted" style="margin-left:.5rem;">{{ reply.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+      </div>
+      <p style="line-height:1.7;color:var(--text-muted);font-size:.9rem;">{{ reply.message }}</p>
+    </div>
+    {% endfor %}
+
+    <!-- REPLY FORM -->
+    {% if ticket.status != 'closed' %}
+    <div class="card mt-2">
+      <h3 style="font-weight:700;margin-bottom:1rem;">Ответить</h3>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <textarea name="message" class="form-control" rows="4" placeholder="Ваш ответ..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-2">Обращение закрыто. <a href="{% url 'support_home' %}">Создать новое</a></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

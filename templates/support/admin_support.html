@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Панель поддержки{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="page-header flex items-center justify-between">
+      <div>
+        <h1 class="page-title">⚙️ Панель поддержки</h1>
+        <p class="page-subtitle">Управление обращениями пользователей</p>
+      </div>
+      <a href="/admin/" class="btn btn-outline btn-sm">Django Admin</a>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="flex gap-1 mb-2" style="flex-wrap:wrap;">
+      <a href="{% url 'admin_support' %}" class="btn {% if not status_filter %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Все</a>
+      <a href="?status=open" class="btn {% if status_filter == 'open' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Открытые</a>
+      <a href="?status=in_progress" class="btn {% if status_filter == 'in_progress' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">В обработке</a>
+      <a href="?status=closed" class="btn {% if status_filter == 'closed' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Закрытые</a>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Тема</th>
+            <th>Пользователь</th>
+            <th>Статус</th>
+            <th>Дата</th>
+            <th>Ответов</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ticket in tickets %}
+          <tr>
+            <td class="text-muted text-sm">#{{ ticket.pk }}</td>
+            <td style="font-weight:600;">{{ ticket.subject|truncatechars:40 }}</td>
+            <td class="text-muted text-sm">{{ ticket.user.email }}</td>
+            <td><span class="status status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+            <td class="text-muted text-sm">{{ ticket.created_at|date:"d M Y" }}</td>
+            <td class="text-muted text-sm">{{ ticket.replies.count }}</td>
+            <td><a href="{% url 'ticket_detail' ticket.pk %}" class="btn btn-outline btn-sm">Открыть</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-muted" style="padding:2rem;">Нет обращений</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

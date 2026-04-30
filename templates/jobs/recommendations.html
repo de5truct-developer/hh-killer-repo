@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Рекомендации{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">🎯 Рекомендованные вакансии</h1>
+      <p class="page-subtitle">Подобраны на основе ваших навыков</p>
+    </div>
+
+    {% if recommended %}
+    <div class="grid grid-auto">
+      {% for vacancy, score in recommended %}
+      <div class="vacancy-card fade-in">
+        <div class="vacancy-card-header">
+          <div>
+            <a href="{% url 'vacancy_detail' vacancy.pk %}" class="vacancy-title">{{ vacancy.title }}</a>
+            <a href="{% url 'public_employer_profile' vacancy.employer.pk %}" class="vacancy-company" style="display:block;">{{ vacancy.get_company_name }}</a>
+          </div>
+          <div style="text-align:right;">
+            <div class="match-badge match-{% if score >= 70 %}success{% elif score >= 40 %}warning{% else %}danger{% endif %}">{{ score }}%</div>
+            <div class="progress" style="width:80px;margin:.4rem 0 0 auto;">
+              <div class="progress-bar progress-bar-{% if score >= 70 %}success{% elif score >= 40 %}warning{% else %}danger{% endif %}" style="width:{{ score }}%;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="vacancy-meta">
+          {% if vacancy.location %}<span class="tag tag-gray">📍 {{ vacancy.location }}</span>{% endif %}
+          <span class="tag tag-gray">{{ vacancy.get_employment_type_display }}</span>
+          {% if vacancy.salary_min or vacancy.salary_max %}<span class="vacancy-salary">{{ vacancy.get_salary_display }}</span>{% endif %}
+        </div>
+        <div class="flex gap-1" style="flex-wrap:wrap;">
+          {% for skill in vacancy.skills_required.all|slice:":6" %}<span class="tag tag-sm">{{ skill.name }}</span>{% endfor %}
+        </div>
+        <a href="{% url 'vacancy_detail' vacancy.pk %}" class="btn btn-outline btn-sm" style="align-self:flex-start;">Подробнее →</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>
+      <h3>Рекомендации не найдены</h3>
+      <p>Добавьте навыки в профиль, чтобы получать персональные рекомендации</p>
+      <a href="{% url 'seeker_profile' %}" class="btn btn-primary mt-2">Обновить профиль</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

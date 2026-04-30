@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{% block meta_description %}HH Killer — умная платформа вакансий с подбором по навыкам{% endblock %}">
+  <title>{% block title %}HH Killer{% endblock %} — Умный поиск работы</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="{% url 'home' %}" class="navbar-brand">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="8" fill="#4F46E5"/>
+        <path d="M7 20V8h3.5v4.5H17V8h3.5v12H17v-4.5h-6.5V20H7z" fill="white"/>
+      </svg>
+      HH<span>Killer</span>
+    </a>
+
+    <ul class="navbar-nav">
+      <li><a href="{% url 'vacancy_list' %}" {% if request.resolver_match.url_name == 'vacancy_list' %}class="active"{% endif %}>Вакансии</a></li>
+      {% if user.is_authenticated and user.is_seeker %}
+        <li><a href="{% url 'recommendations' %}" {% if request.resolver_match.url_name == 'recommendations' %}class="active"{% endif %}>Рекомендации</a></li>
+        <li><a href="{% url 'my_applications' %}">Мои отклики</a></li>
+        <li><a href="{% url 'saved_vacancies' %}">Избранное</a></li>
+      {% endif %}
+      {% if user.is_authenticated and user.is_employer %}
+        <li><a href="{% url 'create_vacancy' %}">+ Вакансия</a></li>
+        <li><a href="{% url 'employer_profile' %}">Мои вакансии</a></li>
+      {% endif %}
+      <li><a href="{% url 'support_home' %}">Поддержка</a></li>
+      {% if user.is_staff %}
+        <li><a href="{% url 'admin_support' %}">⚙ Админ</a></li>
+      {% endif %}
+    </ul>
+
+    <div class="navbar-actions">
+      {% if user.is_authenticated %}
+        <!-- Notification Bell -->
+        <a href="{% url 'notifications_list' %}" class="btn btn-ghost btn-sm" style="position:relative;padding:.45rem .6rem;" title="Уведомления">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          {% if unread_notifications_count %}
+            <span style="position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;border-radius:99px;font-size:.65rem;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;line-height:1.4;">{{ unread_notifications_count }}</span>
+          {% endif %}
+        </a>
+        <a href="{% if user.is_seeker %}{% url 'seeker_profile' %}{% else %}{% url 'employer_profile' %}{% endif %}" class="btn btn-ghost btn-sm">
+          <div class="avatar" style="width:28px;height:28px;font-size:.8rem;">
+            {{ user.first_name|first|upper|default:user.email|first|upper }}
+          </div>
+          {{ user.first_name|default:user.email|truncatechars:15 }}
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-ghost btn-sm">Выйти</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Войти</a>
+        <a href="{% url 'register_choice' %}" class="btn btn-primary btn-sm">Регистрация</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div class="container" style="margin-top:1rem;">
+  {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags|default:'info' }}" data-autohide>
+      {% if msg.tags == 'success' %}✅{% elif msg.tags == 'error' %}❌{% elif msg.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+      {{ msg }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- CONTENT -->
+{% block content %}{% endblock %}
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">HHKiller</div>
+    <div class="footer-links">
+      <a href="{% url 'vacancy_list' %}">Вакансии</a>
+      <a href="{% url 'support_home' %}">Поддержка</a>
+      {% if not user.is_authenticated %}<a href="{% url 'register_choice' %}">Регистрация</a>{% endif %}
+    </div>
+    <div style="font-size:.85rem;">© 2024 HHKiller. Дипломный проект.</div>
+  </div>
+</footer>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

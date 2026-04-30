@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="container-sm">
+    <div class="text-center" style="margin-bottom:2.5rem;">
+      <h1 class="page-title">Кто вы?</h1>
+      <p class="text-muted mt-1">Выберите тип аккаунта для регистрации</p>
+    </div>
+    <div class="grid grid-2" style="gap:1.5rem;max-width:600px;margin:0 auto;">
+      <a href="{% url 'register_seeker' %}" class="card text-center" style="text-decoration:none;color:inherit;padding:2.5rem 1.5rem;cursor:pointer;">
+        <div style="font-size:3.5rem;margin-bottom:1rem;">🔍</div>
+        <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:.5rem;">Ищу работу</h2>
+        <p class="text-muted text-sm">Создайте резюме, добавьте навыки и получайте персональные рекомендации вакансий</p>
+        <div class="btn btn-primary btn-block" style="margin-top:1.5rem;">Создать аккаунт соискателя</div>
+      </a>
+      <a href="{% url 'register_employer' %}" class="card text-center" style="text-decoration:none;color:inherit;padding:2.5rem 1.5rem;cursor:pointer;">
+        <div style="font-size:3.5rem;margin-bottom:1rem;">🏢</div>
+        <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:.5rem;">Ищу сотрудников</h2>
+        <p class="text-muted text-sm">Размещайте вакансии и находите подходящих кандидатов по навыкам автоматически</p>
+        <div class="btn btn-outline btn-block" style="margin-top:1.5rem;">Создать аккаунт работодателя</div>
+      </a>
+    </div>
+    <p class="text-center text-sm text-muted" style="margin-top:2rem;">Уже есть аккаунт? <a href="{% url 'login' %}" style="font-weight:600;">Войти</a></p>
+  </div>
+</div>
+{% endblock %}
